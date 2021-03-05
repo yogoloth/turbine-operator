@@ -1,0 +1,7 @@
+domain: wangjl.dev
+repo: github.com/yogoloth/turbine-operator
+resources:
+- group: monitor.wangjl.dev
+  kind: Turbine
+  version: v1beta1
+version: "2"

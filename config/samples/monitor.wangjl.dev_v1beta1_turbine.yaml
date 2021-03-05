@@ -1,0 +1,16 @@
+apiVersion: monitor.wangjl.dev.wangjl.dev/v1beta1
+kind: Turbine
+metadata:
+  name: turbine-monitor
+spec:
+  hystrixs:
+  - name: hystrix-common
+    selector:
+      monitor: hystrix.stream
+    type: ClusterIP
+    ports:
+      - port: 10001
+        targetPort: 10001
+        protocol: TCP
+
+  
