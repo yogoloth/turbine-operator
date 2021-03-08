@@ -67,6 +67,10 @@ type TurbineList struct {
 	Items           []Turbine `json:"items"`
 }
 
+//var HystrixList corev1.ServiceList
+
+var MonitorName string
+
 func init() {
 	SchemeBuilder.Register(&Turbine{}, &TurbineList{})
 }

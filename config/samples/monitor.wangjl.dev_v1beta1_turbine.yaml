@@ -1,7 +1,7 @@
 apiVersion: monitor.wangjl.dev.wangjl.dev/v1beta1
 kind: Turbine
 metadata:
-  name: turbine-monitor
+  name: moscturbine
 spec:
   hystrixs:
   - name: hystrix-common

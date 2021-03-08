@@ -49,7 +49,7 @@ func constructServiceForTurbine(hystrix *monitorwangjldevv1beta1.Hystrix, turbin
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:      make(map[string]string),
 			Annotations: make(map[string]string),
-			Name:        hystrix.Name,
+			Name:        "turbineoperator-" + turbine.Name + "-" + hystrix.Name,
 			Namespace:   turbine.Namespace,
 		},
 		Spec: corev1.ServiceSpec{
@@ -58,6 +58,9 @@ func constructServiceForTurbine(hystrix *monitorwangjldevv1beta1.Hystrix, turbin
 			Ports:    hystrix.Ports,
 		},
 	}
+	svc.Labels["runner"] = "turbineoperator"
+	svc.Labels["turbine-monitor"] = turbine.Name
+	//svc.Labels[""] = monitorwangjldevv1beta1.MonitorName
 
 	if err := ctrl.SetControllerReference(turbine, svc, schema); err != nil {
 		return nil, err
@@ -82,13 +85,17 @@ func (r *TurbineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return scheduledResult, err
 	}
 
+	if monitorwangjldevv1beta1.MonitorName == "" {
+		monitorwangjldevv1beta1.MonitorName = turbineMonitor.Name
+	}
+
 	for _, hystrix := range turbineMonitor.Spec.Hystrixs {
 		if svc, err := constructServiceForTurbine(&hystrix, &turbineMonitor, r.Scheme); err != nil {
 			logger.Error(err, "constructServiceForTurbine")
 			return scheduledResult, err
 		} else {
 			tmp_svc := corev1.Service{}
-			if err := r.Get(ctx, types.NamespacedName{Namespace: "default", Name: hystrix.Name}, &tmp_svc); err != nil {
+			if err := r.Get(ctx, types.NamespacedName{Namespace: turbineMonitor.Namespace, Name: "turbineoperator-" + turbineMonitor.Name + "-" + hystrix.Name}, &tmp_svc); err != nil {
 				logger.Info("createService")
 				if err := r.Create(ctx, svc); err != nil {
 					logger.Error(err, "createService")
@@ -99,6 +106,13 @@ func (r *TurbineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			}
 		}
 	}
+
+	//var HystrixList corev1.ServiceList
+	//if err := r.List(ctx, &monitorwangjldevv1beta1.HystrixList, client.InNamespace(req.Namespace), client.MatchingFields{serviceOwnerKey: req.Name}); err != nil {
+	//	logger.Error(err, "set hystrixlist")
+	//}
+
+	//logger.Info("set hystrixlist", "hystrixlist", monitorwangjldevv1beta1.HystrixList)
 
 	return ctrl.Result{}, nil
 }
