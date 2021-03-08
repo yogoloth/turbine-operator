@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"time"
 	//"fmt"
 
 	"github.com/go-logr/logr"
@@ -42,6 +43,33 @@ type TurbineReconciler struct {
 var (
 	serviceOwnerKey string = ".metadata.controller"
 )
+
+func constructServiceForDashboard(turbine *monitorwangjldevv1beta1.Turbine, schema *runtime.Scheme) (*corev1.Service, error) {
+
+	port := corev1.ServicePort{Name: "dashboard", Port: 9002}
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:      make(map[string]string),
+			Annotations: make(map[string]string),
+			Name:        "turbinedashboard-" + turbine.Name,
+			Namespace:   turbine.Namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{"turbine-monitor": turbine.Name},
+			Type:     corev1.ServiceTypeNodePort,
+			Ports:    []corev1.ServicePort{port},
+		},
+	}
+	svc.Labels["runner"] = "turbineoperator"
+	svc.Labels["turbine-monitor-dashboard"] = turbine.Name
+	//svc.Labels[""] = monitorwangjldevv1beta1.MonitorName
+
+	if err := ctrl.SetControllerReference(turbine, svc, schema); err != nil {
+		return nil, err
+	}
+
+	return svc, nil
+}
 
 func constructServiceForTurbine(hystrix *monitorwangjldevv1beta1.Hystrix, turbine *monitorwangjldevv1beta1.Turbine, schema *runtime.Scheme) (*corev1.Service, error) {
 
@@ -77,7 +105,7 @@ func constructServiceForTurbine(hystrix *monitorwangjldevv1beta1.Hystrix, turbin
 func (r *TurbineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	logger := r.Log.WithValues("turbine", req.NamespacedName)
-	scheduledResult := ctrl.Result{RequeueAfter: 300}
+	scheduledResult := ctrl.Result{RequeueAfter: 10 * time.Second}
 
 	turbineMonitor := monitorwangjldevv1beta1.Turbine{}
 	if err := r.Get(ctx, req.NamespacedName, &turbineMonitor); err != nil {
@@ -85,9 +113,20 @@ func (r *TurbineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return scheduledResult, err
 	}
 
-	if monitorwangjldevv1beta1.MonitorName == "" {
-		monitorwangjldevv1beta1.MonitorName = turbineMonitor.Name
+	tmp_svc := corev1.Service{}
+	if err := r.Get(ctx, types.NamespacedName{Namespace: turbineMonitor.Namespace, Name: "turbinedashboard-" + turbineMonitor.Name}, &tmp_svc); err != nil {
+		if svc, err := constructServiceForDashboard(&turbineMonitor, r.Scheme); err != nil {
+			logger.Error(err, "constructServiceForDashboard")
+			return scheduledResult, err
+		} else if err := r.Create(ctx, svc); err != nil {
+			logger.Error(err, "create ServiceForDashboard", "svc", svc)
+			return scheduledResult, err
+		}
 	}
+
+	//if monitorwangjldevv1beta1.MonitorName == "" {
+	//	monitorwangjldevv1beta1.MonitorName = turbineMonitor.Name
+	//}
 
 	for _, hystrix := range turbineMonitor.Spec.Hystrixs {
 		if svc, err := constructServiceForTurbine(&hystrix, &turbineMonitor, r.Scheme); err != nil {

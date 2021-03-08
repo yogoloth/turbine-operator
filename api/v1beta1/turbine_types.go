@@ -69,7 +69,7 @@ type TurbineList struct {
 
 //var HystrixList corev1.ServiceList
 
-var MonitorName string
+//var MonitorName string
 
 func init() {
 	SchemeBuilder.Register(&Turbine{}, &TurbineList{})
