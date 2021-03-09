@@ -21,4 +21,8 @@ so monitor can have many.
 example: label pod should be monitor with label "monitor: hystrix.stream"
 kubectl patch deployment xxxxx -p '{"spec":{"template":{"metadata":{"labels":{"monitor": "hystrix.stream"}}}}}'
 ````
+## undeploy
+````
+make undeploy
 
+````
