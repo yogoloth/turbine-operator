@@ -86,8 +86,12 @@ func constructTurbinePod(turbine *monitorwangjldevv1beta1.Turbine, schema *runti
 	return pod, nil
 }
 
-// +kubebuilder:rbac:groups=monitor.wangjl.dev.wangjl.dev,resources=turbineservers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=monitor.wangjl.dev.wangjl.dev,resources=turbineservers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=monitor.wangjl.dev.wangjl.dev,resources=turbines,verbs=get;list;watch
+// +kubebuilder:rbac:groups=monitor.wangjl.dev.wangjl.dev,resources=turbines/status,verbs=get
+// +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=pods/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=endpoints,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=endpoints/status,verbs=get
 
 func (r *TurbineServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()

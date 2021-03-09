@@ -99,8 +99,8 @@ func constructServiceForTurbine(hystrix *monitorwangjldevv1beta1.Hystrix, turbin
 
 // +kubebuilder:rbac:groups=monitor.wangjl.dev.wangjl.dev,resources=turbines,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=monitor.wangjl.dev.wangjl.dev,resources=turbines/status,verbs=get;update;patch
-// +kubebuilder:rbac:resources=services,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:resources=services/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=services/status,verbs=get;update;patch
 
 func (r *TurbineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
