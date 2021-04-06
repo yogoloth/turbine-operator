@@ -6,6 +6,7 @@ make docker-build docker-push IMG=<some-registry>/<project-name>:tag
 ```
 ## 1.2 deploy
 ```bash
+make install
 make deploy IMG=<some-registry>/<project-name>:tag
 ```
 ## 1.3 create cr
