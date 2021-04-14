@@ -62,6 +62,10 @@ func constructTurbinePod(turbine *monitorwangjldevv1beta1.Turbine, schema *runti
 		Name:  "hystrix-dashboard",
 		Image: "mlabouardy/hystrix-dashboard:latest",
 	}
+	hystrix_exporter_container := corev1.Container{
+		Name:  "hystrix-metrics",
+		Image: "wangjl/hystrix_exporter:v0.1_wangjl",
+	}
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -71,7 +75,7 @@ func constructTurbinePod(turbine *monitorwangjldevv1beta1.Turbine, schema *runti
 			Namespace:   turbine.Namespace,
 		},
 		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{turbine_container, hystrix_dashboard_container},
+			Containers: []corev1.Container{turbine_container, hystrix_dashboard_container, hystrix_exporter_container},
 		},
 	}
 	pod.Labels["runner"] = "turbineoperator"
